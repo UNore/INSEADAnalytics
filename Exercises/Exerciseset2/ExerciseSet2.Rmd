@@ -164,8 +164,72 @@ print(m1,'chart')
 
 **Your Answers here:**
 <br>
-<br>
-<br>
+1. Need 6 factors to explain at least 50% of variance.
+2. The first component is heavily weighted towards interest rate factors (5/10 yr US notes, etc and secondly to foreign currency rates).
+3. 10 first factors: interest rate (1,5), currency(2), equities (3,4), energy/oil (6), metals (7), soft commodities(8), precious metal (9), asian equities (10). These are macro factors.
+4. Before the crisis a lower number of principal components are necessary to explain a given level of variance (scree plot curve is higher).
+
+```{r echo=TRUE, comment=NA, warning=FALSE, message=FALSE, results='asis'}
+library(ggplot2)
+pre.crisis.data <- futures_data[as.Date(rownames(futures_data)) < '2007-10-01', ]
+
+
+corused = cor(pre.crisis.data[,apply(futures_data!=0,2,sum) > 10, drop=F])
+Rotated_Results<-principal(corused, nfactors=20, rotate="varimax",score=TRUE)
+Rotated_Factors<-round(Rotated_Results$loadings,2)
+Rotated_Factors<-as.data.frame(unclass(Rotated_Factors))
+colnames(Rotated_Factors)<-paste("Component",1:ncol(Rotated_Factors),sep=" ")
+
+sorted_rows <- sort(Rotated_Factors[,1], decreasing = TRUE, index.return = TRUE)$ix
+Rotated_Factors <- Rotated_Factors[sorted_rows,]
+Rotated_Factors[abs(Rotated_Factors) < 0.3]<-NA
+
+
+plot.data <-data.frame(x = 1:length(Rotated_Results$values),
+                       y = Rotated_Results$values,
+                       z = rep(1, length(Rotated_Results$values)))
+qplot(data = plot.data, x = x, y = y)
+              
+
+
+
+```
+
+
+
+
+```{r echo=TRUE, comment=NA, warning=FALSE, message=FALSE, results='asis'}
+crisis.data <- futures_data[as.Date(rownames(futures_data)) > '2007-10-01' & as.Date(rownames(futures_data)) < '2009-03-01', ]
+
+
+corused = cor(crisis.data[,apply(futures_data!=0,2,sum) > 10, drop=F])
+Rotated_Results<-principal(corused, nfactors=20, rotate="varimax",score=TRUE)
+Rotated_Factors<-round(Rotated_Results$loadings,2)
+Rotated_Factors<-as.data.frame(unclass(Rotated_Factors))
+colnames(Rotated_Factors)<-paste("Component",1:ncol(Rotated_Factors),sep=" ")
+
+sorted_rows <- sort(Rotated_Factors[,1], decreasing = TRUE, index.return = TRUE)$ix
+Rotated_Factors <- Rotated_Factors[sorted_rows,]
+Rotated_Factors[abs(Rotated_Factors) < 0.3]<-NA
+
+
+plot.data <-data.frame(x = 1:length(Rotated_Results$values),
+                       y = Rotated_Results$values,
+                       z = rep(1, length(Rotated_Results$values)))
+qplot(data = plot.data, x = x, y = y)
+
+              
+
+
+
+
+```
+
+
+5. Looking at the scree plots before and during the crisis, we see that the first eigenvalues are higher during the crisis than before. This corresponds to there being some factors that explain a significantly larger portion of the variance during a crisis. This in term means that markets are higher correlated during crises. This implies that the assets that may be a good hedge in normal years will not be so in crises.
+
+
+
 <br>
 
 
@@ -248,8 +312,10 @@ How does this compare with **existing CTA products** such as [this one from Soci
 
 **Your Answers here:**
 <br>
-<br>
-<br>
+
+1. The first part creates a list of different windows that one may be interested in looking at (10-day, 30-day etc). It then creates the signal matrix which contains the sum of the moving averages over the various windows. It then normalizes the rows (i.e. each day) to add up to one (dollar). Finally it looks at the signal two days before to establish the position in order to compute the pnl.
+2. The sequence determines the windows looked at. Could for instance change to only look at the past ten days.
+
 <br>
 
 
